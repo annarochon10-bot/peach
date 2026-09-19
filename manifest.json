@@ -1,0 +1,13 @@
+{
+  "name": "Peach",
+  "short_name": "Peach",
+  "description": "Programme de musculation guidé avec minuteur de repos sonore.",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#1c0f18",
+  "theme_color": "#1c0f18"
+}
