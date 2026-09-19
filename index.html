@@ -1,0 +1,1260 @@
+<title>Peach</title>
+<meta name="description" content="Programme de musculation guidé sur 6 jours avec minuteur de repos sonore." />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Peach" />
+<meta name="theme-color" content="#1c0f18" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Figtree:wght@400;500;600;700;800&display=swap" />
+
+<style>
+:root{
+  color-scheme:dark;
+  --paper:#1c0f18;
+  --surface:#281521;
+  --surface-tint:#34192b;
+  --ink:#ffe0ef;
+  --ink-soft:#d68fb3;
+  --on-rose:#ffe6f1;
+  --rose:#ff2e88;
+  --rose-deep:#ff8fc0;
+  --rose-soft:#45203a;
+  --fonte:#d99cc0;
+  --fonte-soft:#38222f;
+  --line:#452136;
+  --success:#ff5cc8;
+  --success-soft:#4a1f42;
+  --shadow:0 16px 32px -18px rgba(40,8,28,0.6);
+  --shadow-sm:0 6px 14px -10px rgba(40,8,28,0.5);
+}
+
+*{box-sizing:border-box;}
+[hidden]{display:none !important;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{
+  font-family:"Fraunces",ui-serif,Georgia,serif;
+  text-wrap:balance;
+  margin:0;
+}
+p{margin:0;}
+button{font-family:inherit;}
+.app{
+  max-width:560px;
+  margin:0 auto;
+  padding:18px 16px 120px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+/* ---------- topbar ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:4px 2px;
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.eyebrow{
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 0 3px;
+}
+.wordmark{
+  font-family:"Figtree",-apple-system,sans-serif;
+  font-size:26px;
+  font-weight:800;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--rose);
+  line-height:1;
+}
+.week-chip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:var(--surface-tint);
+  color:var(--rose-deep);
+  border:1px solid var(--line);
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.week-chip svg{width:14px;height:14px;flex:none;}
+.header-right{display:flex;align-items:center;gap:8px;flex:none;}
+.unit-chip{
+  border:1px solid var(--line);
+  background:var(--surface);
+  color:var(--fonte);
+  font-size:12px;
+  font-weight:800;
+  padding:8px 11px;
+  border-radius:999px;
+  cursor:pointer;
+  flex:none;
+}
+.unit-chip:active{transform:scale(.95);}
+
+/* ---------- week strip ---------- */
+.week-strip{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+.day-pill{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:10px 2px 9px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:var(--surface);
+  cursor:pointer;
+  position:relative;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.day-pill:active{transform:scale(.96);}
+.day-pill .dow{
+  font-size:10.5px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+}
+.day-pill .code{
+  font-size:12px;
+  font-weight:800;
+  color:var(--ink);
+  letter-spacing:.02em;
+}
+.day-pill .bar{
+  width:20px;height:3px;border-radius:2px;
+  background:var(--line);
+}
+.day-pill[data-muscle="rest"] .bar{background:var(--fonte-soft);}
+.day-pill[data-selected="true"]{
+  border-color:var(--rose);
+  box-shadow:var(--shadow-sm);
+  background:var(--surface-tint);
+}
+.day-pill[data-selected="true"] .bar{background:var(--rose);}
+.day-pill[data-today="true"]::after{
+  content:"";
+  position:absolute;
+  top:6px;right:6px;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--rose);
+}
+.day-pill[data-done="true"] .code{color:var(--success);}
+.day-pill[data-done="true"] .bar{background:var(--success);}
+
+/* ---------- rest picker ---------- */
+.rest-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+  box-shadow:var(--shadow-sm);
+}
+.rest-card.prompt{border-color:var(--rose);background:var(--surface-tint);}
+.rest-card p{font-size:13.5px;color:var(--ink-soft);font-weight:600;text-align:center;}
+.rest-card p b{color:var(--ink);font-weight:700;}
+.segmented{
+  display:flex;
+  background:var(--fonte-soft);
+  border-radius:999px;
+  padding:3px;
+  gap:2px;
+  width:100%;
+}
+.segmented button{
+  border:none;
+  background:transparent;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:700;
+  color:var(--ink-soft);
+  cursor:pointer;
+  flex:1;
+}
+.segmented button[data-active="true"]{
+  background:var(--rose);
+  color:var(--on-rose);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ---------- tabs ---------- */
+.tabs{
+  display:flex;
+  gap:8px;
+  border-bottom:1px solid var(--line);
+}
+.tab{
+  border:none;
+  background:transparent;
+  padding:10px 4px 12px;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink-soft);
+  cursor:pointer;
+  position:relative;
+}
+.tab[data-active="true"]{color:var(--rose-deep);}
+.tab[data-active="true"]::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-1px;
+  height:2px;
+  background:var(--rose);
+  border-radius:2px;
+}
+
+/* ---------- hero / workout header ---------- */
+.workout-hero{
+  background:linear-gradient(135deg,var(--rose) 0%, var(--rose-soft) 100%);
+  border-radius:22px;
+  padding:20px 20px 18px;
+  color:var(--on-rose);
+  box-shadow:var(--shadow);
+}
+.workout-hero .kicker{
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  opacity:.85;margin-bottom:6px;
+}
+.workout-hero h2{font-size:24px;font-weight:600;color:var(--on-rose);}
+.workout-hero .meta{
+  display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;
+}
+.meta-chip{
+  background:rgba(255,224,239,0.18);
+  border:1px solid rgba(255,224,239,0.32);
+  padding:6px 11px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  display:flex;align-items:center;gap:5px;
+}
+.meta-chip svg{width:13px;height:13px;}
+
+.rest-day-hero{
+  background:var(--surface-tint);
+  border:1px dashed var(--rose-soft);
+  border-radius:22px;
+  padding:26px 20px;
+  text-align:center;
+  color:var(--ink);
+}
+.rest-day-hero h2{font-size:22px;margin-bottom:8px;}
+.rest-day-hero p{color:var(--ink-soft);font-size:14px;line-height:1.5;}
+
+/* ---------- section ---------- */
+.section-label{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--fonte);
+  margin:2px 0 2px;
+}
+.section-label .n{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--fonte-soft);color:var(--fonte);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;
+}
+.callout{
+  font-size:12.5px;
+  color:var(--ink-soft);
+  background:var(--surface-tint);
+  border-left:3px solid var(--rose);
+  padding:9px 12px;
+  border-radius:10px;
+  line-height:1.5;
+}
+
+.stretch-row{
+  display:flex;
+  gap:12px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px 14px;
+  align-items:flex-start;
+}
+.stretch-row .idx{
+  font-family:"Fraunces",serif;
+  font-size:18px;
+  color:var(--rose);
+  font-weight:600;
+  flex:none;
+  width:20px;
+}
+.stretch-row .body{flex:1;}
+.stretch-row .name{font-weight:700;font-size:14.5px;margin-bottom:3px;}
+.stretch-row .dose{font-size:12px;color:var(--rose-deep);font-weight:700;margin-bottom:4px;}
+.stretch-row .cue{font-size:13px;color:var(--ink-soft);line-height:1.48;}
+
+/* ---------- exercise card ---------- */
+.exercise{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  box-shadow:var(--shadow-sm);
+}
+.exercise-top{display:flex;gap:12px;align-items:flex-start;}
+.exercise-idx{
+  font-family:"Fraunces",serif;
+  font-size:20px;
+  font-weight:600;
+  color:var(--rose);
+  flex:none;
+  width:24px;
+}
+.exercise-head{flex:1;min-width:0;}
+.exercise-head h3{font-size:16px;font-weight:700;color:var(--ink);}
+.exercise-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.badge{
+  font-size:11.5px;font-weight:700;
+  padding:4px 9px;
+  border-radius:999px;
+  background:var(--fonte-soft);
+  color:var(--fonte);
+}
+.badge.rest{background:var(--rose-soft);color:var(--rose-deep);}
+.exercise-cue{
+  font-size:13.5px;
+  color:var(--ink-soft);
+  line-height:1.55;
+  padding-left:36px;
+}
+.exercise-note{
+  font-size:12.5px;
+  color:var(--rose-deep);
+  background:var(--rose-soft);
+  padding:8px 10px;
+  border-radius:10px;
+  margin-left:36px;
+  line-height:1.5;
+  font-weight:600;
+}
+.sets-row{
+  display:flex;
+  gap:8px;
+  padding-left:36px;
+  flex-wrap:wrap;
+}
+.weight-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-left:36px;
+  flex-wrap:wrap;
+}
+.weight-label{font-size:12px;font-weight:700;color:var(--fonte);}
+.weight-input{
+  width:66px;
+  border:1.5px solid var(--line);
+  border-radius:10px;
+  padding:7px 8px;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink);
+  background:var(--paper);
+  font-variant-numeric:tabular-nums;
+}
+.weight-input:focus{outline:none;border-color:var(--rose);}
+.weight-unit{font-size:12px;color:var(--ink-soft);font-weight:700;}
+.weight-last{font-size:11.5px;color:var(--ink-soft);margin-left:auto;}
+.set-dot{
+  width:38px;height:38px;
+  border-radius:12px;
+  border:1.5px solid var(--line);
+  background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:all .15s ease;
+  flex:none;
+}
+.set-dot:active{transform:scale(.92);}
+.set-dot[data-done="true"]{
+  background:var(--success);
+  border-color:var(--success);
+  color:var(--paper);
+}
+
+/* ---------- complete button ---------- */
+.complete-btn{
+  border:none;
+  border-radius:16px;
+  padding:15px;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--rose);
+  color:var(--on-rose);
+  box-shadow:var(--shadow);
+}
+.complete-btn[data-done="true"]{
+  background:var(--success-soft);
+  color:var(--success);
+  box-shadow:none;
+  border:1.5px solid var(--success);
+}
+.complete-btn svg{width:18px;height:18px;}
+
+.cooldown{
+  display:flex;gap:10px;align-items:center;
+  font-size:13px;color:var(--ink-soft);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:11px 14px;
+}
+.cooldown b{color:var(--ink);}
+
+/* ---------- morning sections ---------- */
+.morning-section{display:flex;flex-direction:column;gap:10px;}
+
+/* ---------- timer overlay ---------- */
+.timer-overlay{
+  position:fixed;
+  inset:0;
+  background:color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter:blur(6px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:50;
+  padding:20px;
+}
+.timer-card{
+  background:var(--surface);
+  border-radius:28px;
+  padding:28px 26px 26px;
+  width:100%;
+  max-width:340px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--line);
+}
+.timer-label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--rose);}
+.timer-ring-wrap{position:relative;width:220px;height:220px;}
+.timer-ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg);}
+.timer-ring-wrap .track{fill:none;stroke:var(--line);stroke-width:12;}
+.timer-ring-wrap .progress{fill:none;stroke:var(--rose);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .25s linear;}
+.timer-time{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Figtree",sans-serif;
+  font-size:44px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink);
+}
+.timer-next{font-size:13px;color:var(--ink-soft);text-align:center;}
+.timer-controls{display:flex;gap:10px;align-items:center;}
+.timer-controls button{
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.timer-adjust{
+  width:46px;height:46px;
+  background:var(--fonte-soft);
+  color:var(--fonte);
+  font-size:13px;
+  border-radius:50%;
+}
+.timer-toggle{
+  width:64px;height:64px;
+  border-radius:50%;
+  background:var(--rose);
+  color:var(--on-rose);
+}
+.timer-toggle svg{width:24px;height:24px;}
+.timer-skip{
+  background:transparent;
+  color:var(--ink-soft);
+  font-size:13px;
+  padding:8px 4px;
+  text-decoration:underline;
+}
+.timer-overlay[data-done="true"] .timer-ring-wrap .progress{stroke:var(--success);}
+.timer-overlay[data-done="true"] .timer-time{color:var(--success);}
+
+.audio-note{
+  font-size:11.5px;
+  color:var(--ink-soft);
+  text-align:center;
+  line-height:1.5;
+}
+
+/* ---------- footer note ---------- */
+.foot-note{
+  text-align:center;
+  font-size:11.5px;
+  color:var(--ink-soft);
+  padding:6px 20px 0;
+  line-height:1.6;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;}
+}
+</style>
+
+<div class="app" id="app"></div>
+
+<div class="timer-overlay" id="timerOverlay" hidden>
+  <div class="timer-card">
+    <p class="timer-label" id="timerLabel">Repos</p>
+    <div class="timer-ring-wrap">
+      <svg viewBox="0 0 160 160">
+        <circle class="track" cx="80" cy="80" r="70"></circle>
+        <circle class="progress" id="timerRing" cx="80" cy="80" r="70"></circle>
+      </svg>
+      <div class="timer-time" id="timerTime">3:00</div>
+    </div>
+    <p class="timer-next" id="timerNext">Prochain : —</p>
+    <div class="timer-controls">
+      <button class="timer-adjust" id="timerMinus">-30</button>
+      <button class="timer-toggle" id="timerToggle" aria-label="Pause"></button>
+      <button class="timer-adjust" id="timerPlus">+30</button>
+    </div>
+    <button class="timer-skip" id="timerSkip">Passer le repos</button>
+    <p class="audio-note">Le bip sonne dans tes AirPods à la fin — garde l'app ouverte et le son allumé.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ ICONS ============ */
+var ICONS = {
+  check: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 006 0c1.2 1 2 2.8 2 4.5A5.5 5.5 0 016.5 20 5.5 5.5 0 013 14.5C3 9 8 7 8 3c1.5 1 2 2.5 1.5 4C10.5 4.5 11 3 12 2z"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+};
+
+/* ============ PROGRAM DATA ============ */
+var DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+var DAY_LABEL = {lundi:"Lundi",mardi:"Mardi",mercredi:"Mercredi",jeudi:"Jeudi",vendredi:"Vendredi",samedi:"Samedi",dimanche:"Dimanche"};
+var DAY_SHORT = {lundi:"LUN",mardi:"MAR",mercredi:"MER",jeudi:"JEU",vendredi:"VEN",samedi:"SAM",dimanche:"DIM"};
+var FIXED_MUSCLE = {lundi:"glutes",mardi:"quads",mercredi:"hamstrings",jeudi:"back",vendredi:"shoulders"};
+var MUSCLE_CODE = {glutes:"GLU",quads:"QUA",hamstrings:"HAM",back:"BAC",shoulders:"TRI",abs:"ABS",rest:"OFF"};
+
+var WORKOUTS = {
+  glutes:{
+    title:"Glutes — Demolition Day",
+    est:"≈ 60 min",
+    warmup:[
+      {name:"Low Lunge Hip Flexor Stretch",dose:"30s / side",cue:"Back knee on the floor, gently tilt your pelvis forward until you feel the stretch at the front of the back hip."},
+      {name:"Glute Bridge Activation",dose:"12 reps, bodyweight",cue:"Lying down, feet on the floor, push through your heels and squeeze your glutes for 1 second at the top — just to wake the muscle up before loading it."}
+    ],
+    exercises:[
+      {name:"Machine Hip Thrust",sets:3,reps:"10-12",rest:180,cue:"Sit into the machine with the pad resting across your hips, back braced against the seat. Drive through your heels until your hips are fully extended, squeeze your glutes hard for 1 second at the top, lower under control without letting the weight stack rest between reps.",note:"Push the last set to true failure."},
+      {name:"Sumo Squat",sets:3,reps:"10",rest:180,cue:"Feet wider than shoulders, toes turned out 30°. Descend by pushing your knees toward your toes, chest tall, drive up by pushing the floor away."},
+      {name:"Bulgarian Split Squat",sets:3,reps:"10 / leg",rest:180,cue:"Back foot up on a bench behind you. Lower straight down on the front leg until the thigh is parallel to the floor, push through the front heel — keep the focus on the front leg's glute."},
+      {name:"Cable Hip Abduction",sets:3,reps:"15",rest:120,cue:"Torso slightly leaned forward, push your knee outward by squeezing the glute medius, control the return."},
+      {name:"Machine Hip Thrust — Drop Set",sets:1,reps:"failure / -20% / -20%",rest:120,cue:"Heavy load on the machine to failure, strip ~20% of the weight and continue to failure, strip another ~20% and finish to failure.",note:"No rest between drops — go straight into the next one, only the load changes. This is the set that should really burn."},
+      {name:"Cable Glute Kickback",sets:3,reps:"12 / side",rest:90,cue:"Cuff on your ankle, torso slightly leaned forward holding the cable tower. Drive the leg back and up, knee softly bent, squeeze hard at the top."}
+    ],
+    cooldown:"Piriformis stretch — knee to chest, then across to the opposite shoulder, 30s / side."
+  },
+  quads:{
+    title:"Quads — Knee-Friendly",
+    est:"≈ 58 min",
+    warmup:[
+      {name:"Standing Quad Stretch",dose:"30s / side",cue:"Grab your ankle behind you, knees together, pelvis slightly tucked so you really feel the front of the thigh."},
+      {name:"Ankle Mobility Rocks",dose:"10 / side",cue:"In a lunge position, drive your knee forward over your toes without lifting the heel off the ground."}
+    ],
+    calloutText:"Green light for knees: comfortable range everywhere, never any pain in the joint — a shorter, cleaner rep beats a deeper, sketchy one.",
+    exercises:[
+      {name:"Leg Press",sets:3,reps:"10",rest:180,cue:"Feet at medium width on the platform. Lower until your knees hit 90°, never lock them out at the top or let them cave inward."},
+      {name:"Goblet Squat",sets:3,reps:"12",rest:180,cue:"Hold a weight against your chest. Descend only as far as feels comfortable for your knees, heels down, back straight."},
+      {name:"Leg Extension",sets:3,reps:"12-15",rest:120,cue:"Back braced against the pad, extend your legs smoothly and hold a 1-second squeeze at the top, lower slowly.",note:"Push the last set to failure."},
+      {name:"Walking Lunges",sets:3,reps:"10 / leg",rest:120,cue:"Step forward, lower to a comfortable angle for the front knee, push back to standing before the next step — control matters more than depth."},
+      {name:"Standing Calf Raise",sets:3,reps:"15",rest:90,cue:"Rise onto your toes as high as you can, hold for 1 second, lower slowly and let the calf stretch fully."}
+    ],
+    cooldown:"Quad + hip flexor stretch, 30s / side."
+  },
+  hamstrings:{
+    title:"Hamstrings",
+    est:"≈ 58 min",
+    warmup:[
+      {name:"Standing Hamstring Stretch",dose:"30s / side",cue:"Straight leg on a bench or the floor, hinge your torso forward from the hips, long spine, no forcing through the low back."},
+      {name:"Leg Swings",dose:"10 / side",cue:"Holding a wall for balance, swing a straight leg forward and back to warm up the hip."}
+    ],
+    exercises:[
+      {name:"Romanian Deadlift (RDL)",sets:3,reps:"10",rest:180,cue:"Bar close to your thighs, knees barely bent. Push your hips back with a flat back until you feel the hamstring stretch, then drive your hips forward to stand back up.",note:"Push the last set to failure while keeping the hinge clean."},
+      {name:"Good Morning",sets:3,reps:"10",rest:180,cue:"Light bar across your upper back, knees softly bent and fixed. Hinge your torso forward from the hips to about 45°, neutral spine the whole time, return by squeezing your hamstrings and glutes."},
+      {name:"Lying Leg Curl",sets:3,reps:"12",rest:120,cue:"Curl your heels toward your glutes, hold a strong squeeze at the end, lower slowly without letting the weight drop.",note:"Push the last set to failure."},
+      {name:"Glute Bridge March",sets:3,reps:"10 / side",rest:120,cue:"Hold a glute bridge, lift one knee toward your chest without letting your hips dip to one side, alternate."},
+      {name:"Back Extension",sets:3,reps:"12",rest:90,cue:"Hips on the edge of the pad, lower your torso with a flat back, come up by driving mainly with your hamstrings and glutes, not your low back."}
+    ],
+    cooldown:"Deep standing hamstring stretch, 30s / side."
+  },
+  back:{
+    title:"Back & Biceps — Pull-Up Strength",
+    est:"≈ 52 min",
+    warmup:[
+      {name:"Passive Dead Hang",dose:"20-30s",cue:"Hang from the bar with straight arms, shoulders relaxed away from your ears — this preps the shoulders and your grip."},
+      {name:"Lat Stretch",dose:"30s / side",cue:"One arm overhead against a frame, lean your torso toward the opposite side."}
+    ],
+    calloutText:"Biceps are kept light on purpose here — pull-ups, rows and seated cable row already do most of the work for your arms without adding bulk.",
+    exercises:[
+      {name:"Pull-Ups — Strength Protocol",sets:3,reps:"AMRAP",rest:180,cue:"Pronated grip, just outside shoulder width. Pull by driving your elbows down and back, chest toward the bar, then lower under full control until your arms are straight.",note:"Sets 1-2: max strict reps, all the way to failure. Set 3: if you're cooked, do 5 slow negatives (5-second lowers) instead — or hold a max-effort dead hang as a grip finisher."},
+      {name:"Barbell Row",sets:3,reps:"8-10",rest:180,cue:"Torso hinged to about 45°, flat back. Pull the bar toward your navel while squeezing your shoulder blades together, lower under control without rounding your back."},
+      {name:"Seated Cable Row",sets:3,reps:"12",rest:120,cue:"Sitting tall, pull the handle toward your abdomen with elbows close to your body, squeeze your shoulder blades at the end."},
+      {name:"Hammer Curl",sets:2,reps:"12",rest:90,cue:"Palms facing each other throughout the movement, curl up under control — this also hits the forearms.",note:"Only 2 light sets here on purpose — just enough to keep your arms toned and strong, not to bulk them up."}
+    ],
+    cooldown:"Lats + biceps stretch, 30s / side."
+  },
+  shoulders:{
+    title:"Triceps & Shoulders",
+    est:"≈ 58 min",
+    warmup:[
+      {name:"Overhead Triceps Stretch",dose:"20s / side",cue:"One arm bent behind your head, the other hand gently pushes the elbow down."},
+      {name:"Shoulder Rolls + Cross-Body Stretch",dose:"30s / side",cue:"Arm straight across your body, the other arm pins it against your chest to stretch the back of the shoulder."}
+    ],
+    exercises:[
+      {name:"Dips (Upright Torso)",sets:3,reps:"8-10",rest:180,cue:"Keep your torso upright — not leaned forward, or you'll shift the work to your chest. Lower until your elbows hit about 90°, push hard to come back up, elbows close to your body.",note:"Push the last set to failure."},
+      {name:"Dumbbell Overhead Press",sets:3,reps:"10",rest:180,cue:"Core braced tight so your low back doesn't arch. Press the dumbbells overhead to full extension, lower back down to shoulder height."},
+      {name:"Lateral Raise",sets:3,reps:"12-15",rest:120,cue:"Torso slightly leaned forward, lead the movement with your elbows, raise to shoulder height, lower slowly.",note:"Push the last set to failure."},
+      {name:"Cable Triceps Pushdown",sets:3,reps:"12",rest:120,cue:"Elbows fixed at your sides, fully extend your arms downward, hold a 1-second squeeze, return under control."},
+      {name:"Overhead Triceps Extension",sets:3,reps:"12",rest:90,cue:"Hold a dumbbell with both hands behind your head, elbows pointed forward and fixed, extend your arms upward."},
+      {name:"Face Pull",sets:2,reps:"15",rest:90,cue:"Rope at the high pulley, pull toward your face while pulling your hands apart, elbows high, squeeze your shoulder blades — this is for shoulder health."}
+    ],
+    cooldown:"Shoulders + triceps stretch, 20s / side."
+  },
+  abs:{
+    title:"Abs & Cardio",
+    est:"≈ 50 min",
+    warmup:[
+      {name:"Standing Trunk Rotation",dose:"10 / side",cue:"Feet planted, twist your torso gently side to side to warm up your spine."},
+      {name:"Slow Mountain Climbers",dose:"20s",cue:"In a plank, bring your knees toward your chest one at a time, slowly, to switch the body on before speeding up."}
+    ],
+    circuitLabel:"Ab circuit — 3 rounds, 3:00 rest between each full round (no rest between exercises within a round)",
+    exercises:[
+      {name:"Plank",sets:3,reps:"45s",rest:180,cue:"Body in a straight line from heels to head, abs and glutes braced, don't let your hips sag."},
+      {name:"Russian Twists",sets:3,reps:"20 (10/side)",rest:0,cue:"Seated, torso leaned back, rotate your torso side to side tapping the floor each time.",note:"Go straight into this after the plank — no rest, same round."},
+      {name:"Leg Raise",sets:3,reps:"15",rest:0,cue:"Lying down, legs straight, lower them slowly without arching your low back, raise back to vertical.",note:"Go straight into this too, still no rest."},
+      {name:"Bicycle Crunch",sets:3,reps:"20 (10/side)",rest:180,cue:"Bring your elbow to the opposite knee as you pedal, exhale on every crunch.",note:"Last move of the round — take the full 3:00 rest after this one, then start the round again."},
+      {name:"Cardio Finisher",sets:1,reps:"20-25 min",rest:0,cue:"Bike, jump rope, or rower. Intervals: 1 minute fast / 1 minute easy, for 20 to 25 minutes."}
+    ],
+    cooldown:"Deep breathing + full trunk stretch, 1 minute."
+  }
+};
+
+var MORNING = {
+  title:"Morning Stretch",
+  est:"15-20 min",
+  sections:[
+    {title:"Wake-Up",items:[
+      {name:"Cat-Cow",dose:"45s × 2",cue:"On all fours, alternate rounding your back (exhale) and arching it (inhale) at the pace of your breath."},
+      {name:"Standing Hamstring Stretch",dose:"30s × 2",cue:"Hinge your torso forward, knees slightly bent, let your head and arms hang."},
+      {name:"Hip Circles",dose:"10 / side",cue:"Standing, draw big circles with your hips."},
+      {name:"Cross-Body Shoulder Stretch",dose:"20s / side",cue:"One arm straight across your body, the other hand pins it against your chest."}
+    ]},
+    {title:"Posture",items:[
+      {name:"Low Lunge Hip Flexor Stretch",dose:"30s / side",cue:"Back knee on the floor, tilt your pelvis forward."},
+      {name:"Doorway Chest Stretch",dose:"30s / side",cue:"Forearm against the door frame, gently lean your body forward until you feel the stretch at the front of the shoulder."},
+      {name:"Scapular Retraction",dose:"15 reps",cue:"Arms at your sides, squeeze your shoulder blades together and down, hold for 1 second."},
+      {name:"Light Superman",dose:"2 × 10",cue:"Lying on your stomach, lift your arms and legs slightly at the same time, squeeze your low back and glutes."}
+    ]},
+    {title:"Hard Abs",items:[
+      {name:"Hollow Body Hold",dose:"3 × 20-30s",cue:"Low back pressed to the floor, arms and legs straight and slightly lifted — body shaped like a banana."},
+      {name:"Dead Bug",dose:"3 × 10 / side",cue:"Arms and legs up at 90°, lower one arm and the opposite leg toward the floor without arching your back."},
+      {name:"V-Ups",dose:"3 × 12",cue:"Raise your torso and straight legs at the same time to touch your feet, forming a V shape."},
+      {name:"Fast Mountain Climbers",dose:"3 × 20",cue:"In a plank, drive your knees toward your chest quickly, alternating."}
+    ]},
+    {title:"Calisthenics",items:[
+      {name:"Push-Ups",dose:"2 × max (2 in reserve)",cue:"Body aligned, lower your chest close to the floor with elbows at 45°, push back up."},
+      {name:"Bodyweight Squats",dose:"2 × 15",cue:"Feet shoulder-width, push your hips back and down, chest tall."},
+      {name:"Pike Push-Up",dose:"2 × 10",cue:"Hips high in an inverted V, lower the top of your head toward the floor between your hands, push back up — this preps your shoulders."}
+    ]}
+  ]
+};
+
+/* ============ STATE ============ */
+var STORE_KEY = "rf-state-v1";
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {restDayByWeek:{}, completed:{}, setChecks:{}, weights:{}, unit:"lb", tab:"workout"};
+}
+function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+var state = loadState();
+if(!state.restDayByWeek){
+  state.restDayByWeek = {};
+  if(state.restDay && state.restWeek) state.restDayByWeek[state.restWeek] = state.restDay;
+}
+
+/* ============ DATE HELPERS ============ */
+function pad(n){return n<10?"0"+n:""+n;}
+function dateKey(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function isoWeekKey(d){
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day = (date.getUTCDay()+6)%7;
+  date.setUTCDate(date.getUTCDate()-day+3);
+  var firstThursday = new Date(Date.UTC(date.getUTCFullYear(),0,4));
+  var week = 1+Math.round(((date-firstThursday)/86400000-3+((firstThursday.getUTCDay()+6)%7))/7);
+  return date.getUTCFullYear()+"-W"+pad(week);
+}
+var DOW_TO_KEY = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+var MONTHS_FR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+var today = new Date();
+var todayKey = dateKey(today);
+var todayDow = DOW_TO_KEY[today.getDay()];
+var currentIsoWeek = isoWeekKey(today);
+
+if(!state.selectedDay) state.selectedDay = todayDow;
+if(!state.tab) state.tab = "workout";
+if(!state.weights) state.weights = {};
+if(!state.unit) state.unit = "lb";
+
+function formatFullDate(d){
+  return DAY_LABEL[DOW_TO_KEY[d.getDay()]]+" "+d.getDate()+" "+MONTHS_FR[d.getMonth()];
+}
+
+/* ============ DERIVED PROGRAM LOGIC ============ */
+function currentRestDay(){ return state.restDayByWeek[currentIsoWeek] || null; }
+function muscleForDay(dayKey){
+  if(FIXED_MUSCLE[dayKey]) return FIXED_MUSCLE[dayKey];
+  // samedi / dimanche
+  var rest = currentRestDay();
+  if(!rest) return null; // not chosen yet this week
+  if(dayKey === rest) return "rest";
+  return "abs";
+}
+
+function completedFor(dayKeyDate){
+  return state.completed[dayKeyDate] || {};
+}
+function weekDates(){
+  // Monday-based week containing "today"
+  var dow = (today.getDay()+6)%7; // 0=lundi
+  var monday = new Date(today);
+  monday.setDate(today.getDate()-dow);
+  var arr = [];
+  for(var i=0;i<7;i++){
+    var d = new Date(monday);
+    d.setDate(monday.getDate()+i);
+    arr.push(d);
+  }
+  return arr;
+}
+function weekProgress(){
+  var dates = weekDates();
+  var done = 0, total = 0;
+  dates.forEach(function(d){
+    var dow = DOW_TO_KEY[d.getDay()];
+    var m = muscleForDay(dow);
+    if(m && m !== "rest"){
+      total++;
+      var c = completedFor(dateKey(d));
+      if(c.workout) done++;
+    }
+  });
+  return {done:done, total:total};
+}
+
+/* ============ STREAK ============ */
+function dayQualifies(d){
+  var dow = DOW_TO_KEY[d.getDay()];
+  if(FIXED_MUSCLE[dow]){
+    var c = completedFor(dateKey(d));
+    return !!c.workout;
+  }
+  var wk = isoWeekKey(d);
+  var chosen = state.restDayByWeek[wk];
+  if(!chosen) return false;
+  if(chosen === dow) return true;
+  var c2 = completedFor(dateKey(d));
+  return !!c2.workout;
+}
+function computeStreak(){
+  var d = new Date(today);
+  if(!dayQualifies(d)) d.setDate(d.getDate()-1);
+  var streak = 0;
+  var guard = 0;
+  while(dayQualifies(d) && guard < 1000){
+    streak++;
+    d.setDate(d.getDate()-1);
+    guard++;
+  }
+  return streak;
+}
+
+/* ============ RENDER ============ */
+var appEl = document.getElementById("app");
+
+function el(html){
+  var t = document.createElement("template");
+  t.innerHTML = html.trim();
+  return t.content.firstElementChild;
+}
+
+function render(){
+  var wp = weekProgress();
+  var streak = computeStreak();
+  var html = "";
+
+  html += '<header class="topbar">'+
+    '<div class="brand">'+
+      '<div class="brand-text"><p class="eyebrow">'+formatFullDate(today)+'</p><p class="wordmark">Peach</p></div>'+
+    '</div>'+
+    '<div class="header-right">'+
+      '<button class="unit-chip" id="unitToggle">'+state.unit.toUpperCase()+'</button>'+
+      '<div class="week-chip streak-chip" title="'+streak+' jours de suite">'+ICONS.flame+'<span>'+streak+'</span></div>'+
+    '</div>'+
+  '</header>';
+
+  // week strip
+  html += '<nav class="week-strip" id="weekStrip">';
+  DAYS.forEach(function(dk){
+    var m = muscleForDay(dk);
+    var isToday = dk === todayDow;
+    var isSelected = dk === state.selectedDay;
+    var dObj = weekDates()[DAYS.indexOf(dk)];
+    var dtKey = dateKey(dObj);
+    var done = !!(completedFor(dtKey).workout);
+    var code = m ? MUSCLE_CODE[m] : "?";
+    html += '<div class="day-pill" data-day="'+dk+'" data-muscle="'+(m||"unset")+'" data-today="'+isToday+'" data-selected="'+isSelected+'" data-done="'+done+'">'+
+      '<span class="dow">'+DAY_SHORT[dk]+'</span>'+
+      '<span class="code">'+code+'</span>'+
+      '<span class="bar"></span>'+
+    '</div>';
+  });
+  html += '</nav>';
+
+  // rest picker
+  var restToday = currentRestDay();
+  var needsPrompt = !restToday;
+  html += '<div class="rest-card'+(needsPrompt?' prompt':'')+'">'+
+    '<p>'+(needsPrompt ? '<b>Nouvelle semaine.</b> Choisis ton jour de repos.' : 'Repos cette semaine : <b>'+DAY_LABEL[restToday]+'</b>')+'</p>'+
+    '<div class="segmented" id="restSeg">'+
+      '<button data-rest="samedi" data-active="'+(restToday==="samedi")+'">Samedi</button>'+
+      '<button data-rest="dimanche" data-active="'+(restToday==="dimanche")+'">Dimanche</button>'+
+    '</div>'+
+  '</div>';
+
+  // tabs
+  html += '<div class="tabs">'+
+    '<button class="tab" data-tab="workout" data-active="'+(state.tab==="workout")+'">Séance du jour</button>'+
+    '<button class="tab" data-tab="morning" data-active="'+(state.tab==="morning")+'">Étirement matinal</button>'+
+  '</div>';
+
+  html += '<main id="mainView"></main>';
+  html += '<p class="foot-note">Astuce : garde l\'écran allumé pendant le minuteur pour être sûre d\'entendre le bip dans tes AirPods.</p>';
+
+  appEl.innerHTML = html;
+  renderMain();
+  bindTopLevel();
+}
+
+function renderMain(){
+  var mainView = document.getElementById("mainView");
+  if(state.tab === "morning"){
+    mainView.innerHTML = renderMorningHTML();
+  } else {
+    mainView.innerHTML = renderWorkoutHTML(state.selectedDay);
+  }
+  bindMainEvents();
+}
+
+function renderWorkoutHTML(dayKey){
+  var m = muscleForDay(dayKey);
+  var dIndex = DAYS.indexOf(dayKey);
+  var dObj = weekDates()[dIndex];
+  var dtKey = dateKey(dObj);
+  var done = !!(completedFor(dtKey).workout);
+
+  if(m === null){
+    return '<div class="rest-day-hero"><h2>Choisis d\'abord ton repos</h2><p>Utilise le sélecteur ci-dessus pour choisir si ton repos cette semaine tombe le samedi ou le dimanche.</p></div>';
+  }
+  if(m === "rest"){
+    return '<div class="rest-day-hero"><h2>Jour de repos</h2><p>Aucune séance aujourd\'hui — profites-en pour récupérer. Tu peux quand même faire ton étirement matinal dans l\'autre onglet.</p></div>';
+  }
+
+  var w = WORKOUTS[m];
+  var wp = weekProgress();
+  var html = "";
+  html += '<div class="workout-hero"><p class="kicker">'+DAY_LABEL[dayKey]+'</p><h2>'+w.title+'</h2>'+
+    '<div class="meta"><span class="meta-chip">'+ICONS.clock+' '+w.est+'</span><span class="meta-chip">'+w.exercises.length+' exercises</span><span class="meta-chip">'+wp.done+'/'+wp.total+' cette semaine</span></div></div>';
+
+  html += '<p class="callout">3 séries maximum par exercice — fais compter la dernière, pousse-la jusqu\'à l\'échec.</p>';
+
+  html += '<div class="section-label"><span class="n">•</span> Warm-Up — Stay Injury-Free</div>';
+  w.warmup.forEach(function(s,i){
+    html += renderStretchRow(s, i+1);
+  });
+
+  if(w.calloutText){
+    html += '<p class="callout">'+w.calloutText+'</p>';
+  }
+  if(w.circuitLabel){
+    html += '<p class="callout">'+w.circuitLabel+'</p>';
+  }
+
+  html += '<div class="section-label"><span class="n">•</span> Exercises</div>';
+  w.exercises.forEach(function(ex, i){
+    html += renderExercise(ex, i, m, dtKey);
+  });
+
+  html += '<div class="cooldown">'+ICONS.clock+'<span><b>Cooldown — </b>'+w.cooldown+'</span></div>';
+
+  html += '<button class="complete-btn" id="completeBtn" data-done="'+done+'">'+ICONS.check+' '+(done? "Séance terminée !" : "Marquer la séance comme terminée")+'</button>';
+
+  return html;
+}
+
+function renderStretchRow(s, idx){
+  return '<div class="stretch-row"><span class="idx">'+idx+'</span><div class="body">'+
+    '<p class="name">'+s.name+'</p>'+
+    '<p class="dose">'+s.dose+'</p>'+
+    '<p class="cue">'+s.cue+'</p>'+
+  '</div></div>';
+}
+
+function renderExercise(ex, idx, muscleKey, dtKey){
+  var exId = muscleKey+"__"+idx;
+  var stateKey = dtKey+"|"+exId;
+  var checks = state.setChecks[stateKey] || [];
+  var setsHtml = "";
+  for(var s=0;s<ex.sets;s++){
+    var isDone = !!checks[s];
+    setsHtml += '<div class="set-dot" data-ex="'+exId+'" data-set="'+s+'" data-done="'+isDone+'">'+(isDone?"✓":(s+1))+'</div>';
+  }
+  var restLabel = ex.rest>0 ? Math.round(ex.rest/60*10)/10+" min" : "none";
+  var savedW = state.weights[exId];
+  var wVal = savedW ? savedW.value : "";
+  var lastLine = savedW ? ("Dernière fois : "+savedW.value+" "+savedW.unit) : "Pas encore de poids enregistré";
+  var html = '<div class="exercise" data-exid="'+exId+'">'+
+    '<div class="exercise-top">'+
+      '<span class="exercise-idx">'+(idx+1)+'</span>'+
+      '<div class="exercise-head">'+
+        '<h3>'+ex.name+'</h3>'+
+        '<div class="exercise-badges">'+
+          '<span class="badge">'+ex.sets+' × '+ex.reps+'</span>'+
+          '<span class="badge rest">Rest '+restLabel+'</span>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<p class="exercise-cue">'+ex.cue+'</p>';
+  if(ex.note){
+    html += '<p class="exercise-note">'+ex.note+'</p>';
+  }
+  html += '<div class="sets-row">'+setsHtml+'</div>';
+  html += '<div class="weight-row">'+
+      '<span class="weight-label">Poids</span>'+
+      '<input type="number" inputmode="decimal" step="0.5" class="weight-input" data-ex="'+exId+'" value="'+wVal+'" placeholder="—" />'+
+      '<span class="weight-unit">'+state.unit+'</span>'+
+      '<span class="weight-last">'+lastLine+'</span>'+
+    '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderMorningHTML(){
+  var dtKey = todayKey;
+  var done = !!(completedFor(dtKey).morning);
+  var html = '<div class="workout-hero" style="background:linear-gradient(135deg,var(--fonte) 0%, var(--ink) 100%);"><p class="kicker">Chaque matin</p><h2>'+MORNING.title+'</h2>'+
+    '<div class="meta"><span class="meta-chip">'+ICONS.clock+' '+MORNING.est+'</span></div></div>';
+
+  MORNING.sections.forEach(function(sec, si){
+    html += '<div class="section-label"><span class="n">'+(si+1)+'</span> '+sec.title+'</div>';
+    html += '<div class="morning-section">';
+    sec.items.forEach(function(item, i){
+      html += renderStretchRow(item, i+1);
+    });
+    html += '</div>';
+  });
+
+  html += '<button class="complete-btn" id="morningCompleteBtn" data-done="'+done+'">'+ICONS.check+' '+(done? "Étirement fait !" : "Marquer l'étirement matinal comme fait")+'</button>';
+  return html;
+}
+
+/* ============ EVENTS ============ */
+function bindTopLevel(){
+  var strip = document.getElementById("weekStrip");
+  strip.querySelectorAll(".day-pill").forEach(function(p){
+    p.addEventListener("click", function(){
+      state.selectedDay = p.getAttribute("data-day");
+      state.tab = "workout";
+      saveState();
+      render();
+    });
+  });
+
+  document.getElementById("unitToggle").addEventListener("click", function(){
+    state.unit = state.unit === "lb" ? "kg" : "lb";
+    saveState();
+    render();
+  });
+
+  var seg = document.getElementById("restSeg");
+  seg.querySelectorAll("button").forEach(function(b){
+    b.addEventListener("click", function(){
+      state.restDayByWeek[currentIsoWeek] = b.getAttribute("data-rest");
+      saveState();
+      render();
+    });
+  });
+
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.addEventListener("click", function(){
+      state.tab = t.getAttribute("data-tab");
+      saveState();
+      renderMain();
+      document.querySelectorAll(".tab").forEach(function(tt){
+        tt.setAttribute("data-active", tt.getAttribute("data-tab")===state.tab ? "true":"false");
+      });
+    });
+  });
+}
+
+function bindMainEvents(){
+  unlockAudioOnce();
+
+  document.querySelectorAll(".set-dot").forEach(function(dot){
+    dot.addEventListener("click", function(){
+      var exId = dot.getAttribute("data-ex");
+      var setIdx = parseInt(dot.getAttribute("data-set"),10);
+      var dtKey = dateKey(weekDates()[DAYS.indexOf(state.selectedDay)]);
+      var stateKey = dtKey+"|"+exId;
+      var checks = state.setChecks[stateKey] || [];
+      var wasDone = !!checks[setIdx];
+      checks[setIdx] = !wasDone;
+      state.setChecks[stateKey] = checks;
+      saveState();
+      dot.setAttribute("data-done", (!wasDone).toString());
+      dot.textContent = (!wasDone) ? "✓" : (setIdx+1);
+
+      if(!wasDone){
+        var m = muscleForDay(state.selectedDay);
+        var idx = parseInt(exId.split("__")[1],10);
+        var ex = WORKOUTS[m].exercises[idx];
+        if(ex.rest > 0){
+          var nextLabel = (idx+1 < WORKOUTS[m].exercises.length) ? WORKOUTS[m].exercises[idx+1].name : "fin de la séance";
+          if(setIdx+1 < ex.sets){ nextLabel = ex.name + " — série "+(setIdx+2); }
+          startTimer(ex.rest, ex.name, nextLabel);
+        }
+      }
+    });
+  });
+
+  document.querySelectorAll(".weight-input").forEach(function(input){
+    input.addEventListener("change", function(){
+      var exId = input.getAttribute("data-ex");
+      var val = parseFloat(input.value);
+      if(!isNaN(val)){
+        state.weights[exId] = {value: val, unit: state.unit};
+        saveState();
+        var last = input.parentElement.querySelector(".weight-last");
+        if(last) last.textContent = "Dernière fois : "+val+" "+state.unit;
+      }
+    });
+  });
+
+  var completeBtn = document.getElementById("completeBtn");
+  if(completeBtn){
+    completeBtn.addEventListener("click", function(){
+      var dtKey = dateKey(weekDates()[DAYS.indexOf(state.selectedDay)]);
+      var c = state.completed[dtKey] || {};
+      c.workout = !c.workout;
+      state.completed[dtKey] = c;
+      saveState();
+      render();
+    });
+  }
+  var morningBtn = document.getElementById("morningCompleteBtn");
+  if(morningBtn){
+    morningBtn.addEventListener("click", function(){
+      var c = state.completed[todayKey] || {};
+      c.morning = !c.morning;
+      state.completed[todayKey] = c;
+      saveState();
+      renderMain();
+    });
+  }
+}
+
+/* ============ AUDIO (beep-beep) ============ */
+var audioCtx = null;
+function unlockAudioOnce(){
+  if(audioCtx) return;
+  document.body.addEventListener("pointerdown", function initAudio(){
+    try{
+      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state === "suspended") audioCtx.resume();
+    }catch(e){}
+    document.body.removeEventListener("pointerdown", initAudio);
+  }, {once:true});
+}
+function playBeepBeep(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    var now = audioCtx.currentTime;
+    var pattern = [0, 0.22, 0.55, 0.77]; // beep, beep, (gap), beep, beep
+    pattern.forEach(function(offset){
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = "square";
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, now+offset);
+      gain.gain.exponentialRampToValueAtTime(0.9, now+offset+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+offset+0.18);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now+offset);
+      osc.stop(now+offset+0.2);
+    });
+  }catch(e){}
+  if(navigator.vibrate){ try{ navigator.vibrate([180,90,180,90,180]); }catch(e){} }
+}
+
+/* ============ WAKE LOCK ============ */
+var wakeLock = null;
+async function requestWakeLock(){
+  try{
+    if("wakeLock" in navigator){
+      wakeLock = await navigator.wakeLock.request("screen");
+    }
+  }catch(e){}
+}
+function releaseWakeLock(){
+  if(wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock = null; }
+}
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState === "visible" && timerState.running) requestWakeLock();
+});
+
+/* ============ REST TIMER ============ */
+var timerOverlay = document.getElementById("timerOverlay");
+var timerRing = document.getElementById("timerRing");
+var timerTime = document.getElementById("timerTime");
+var timerLabel = document.getElementById("timerLabel");
+var timerNext = document.getElementById("timerNext");
+var timerToggle = document.getElementById("timerToggle");
+var RING_CIRC = 2*Math.PI*70;
+timerRing.style.strokeDasharray = RING_CIRC;
+
+var timerState = {total:180, remaining:180, running:false, tickHandle:null, exName:"", nextName:""};
+
+function startTimer(seconds, exName, nextName){
+  timerState.total = seconds;
+  timerState.remaining = seconds;
+  timerState.running = true;
+  timerState.exName = exName;
+  timerState.nextName = nextName;
+  timerLabel.textContent = "Repos — "+exName;
+  timerNext.textContent = "Prochain : "+nextName;
+  timerOverlay.hidden = false;
+  timerOverlay.removeAttribute("data-done");
+  updateToggleIcon();
+  requestWakeLock();
+  tickLoop();
+}
+
+function tickLoop(){
+  clearInterval(timerState.tickHandle);
+  updateTimerVisual();
+  timerState.tickHandle = setInterval(function(){
+    if(!timerState.running) return;
+    timerState.remaining -= 1;
+    if(timerState.remaining <= 0){
+      timerState.remaining = 0;
+      updateTimerVisual();
+      clearInterval(timerState.tickHandle);
+      timerState.running = false;
+      playBeepBeep();
+      timerOverlay.setAttribute("data-done","true");
+      timerLabel.textContent = "C'est reparti !";
+      timerNext.textContent = timerState.nextName;
+      releaseWakeLock();
+      setTimeout(function(){ timerOverlay.hidden = true; }, 2600);
+      return;
+    }
+    updateTimerVisual();
+  }, 1000);
+}
+
+function updateTimerVisual(){
+  var frac = timerState.remaining / timerState.total;
+  var offset = RING_CIRC * (1-frac);
+  timerRing.style.strokeDashoffset = offset;
+  var m = Math.floor(timerState.remaining/60);
+  var s = timerState.remaining%60;
+  timerTime.textContent = m+":"+pad(s);
+}
+
+function updateToggleIcon(){
+  timerToggle.innerHTML = timerState.running ? ICONS.pause : ICONS.play;
+  timerToggle.setAttribute("aria-label", timerState.running ? "Pause" : "Reprendre");
+}
+
+document.getElementById("timerToggle").addEventListener("click", function(){
+  timerState.running = !timerState.running;
+  updateToggleIcon();
+  if(timerState.running) requestWakeLock(); else releaseWakeLock();
+});
+document.getElementById("timerPlus").addEventListener("click", function(){
+  timerState.remaining = Math.min(timerState.remaining+30, timerState.total+600);
+  timerState.total = Math.max(timerState.total, timerState.remaining);
+  updateTimerVisual();
+});
+document.getElementById("timerMinus").addEventListener("click", function(){
+  timerState.remaining = Math.max(timerState.remaining-30, 0);
+  updateTimerVisual();
+});
+document.getElementById("timerSkip").addEventListener("click", function(){
+  clearInterval(timerState.tickHandle);
+  timerState.running = false;
+  releaseWakeLock();
+  timerOverlay.hidden = true;
+});
+
+/* ============ INIT ============ */
+render();
+
+})();
+</script>
