@@ -1748,6 +1748,31 @@ document.getElementById("timerSkip").addEventListener("click", function(){
   timerOverlay.hidden = true;
 });
 
+/* ============ ONE-TIME SEED (manual data restore, triggered by URL param) ============ */
+(function applySeedIfRequested(){
+  try{
+    var params = new URLSearchParams(location.search);
+    if(params.get("seed") !== "weekdone") return;
+    var wd = weekDates();
+    for(var i=0;i<5;i++){
+      var k = dateKey(wd[i]);
+      state.completed[k] = state.completed[k] || {};
+      state.completed[k].workout = true;
+    }
+    state.restDayByWeek[isoWeekKey(wd[0])] = "dimanche";
+    var prevSat = new Date(wd[0]); prevSat.setDate(prevSat.getDate()-2);
+    var prevSun = new Date(wd[0]); prevSun.setDate(prevSun.getDate()-1);
+    state.restDayByWeek[isoWeekKey(prevSun)] = "dimanche";
+    var prevSatKey = dateKey(prevSat);
+    state.completed[prevSatKey] = state.completed[prevSatKey] || {};
+    state.completed[prevSatKey].workout = true;
+    saveState();
+    var url = new URL(location.href);
+    url.searchParams.delete("seed");
+    location.replace(url.toString());
+  }catch(e){}
+})();
+
 /* ============ INIT ============ */
 render();
 
