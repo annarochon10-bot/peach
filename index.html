@@ -213,44 +213,33 @@ button{font-family:inherit;}
 .day-pill[data-done="true"] .code{color:var(--success);}
 .day-pill[data-done="true"] .bar{background:var(--success);}
 
-/* ---------- rest picker ---------- */
-.rest-card{
+/* ---------- morning quick access ---------- */
+.morning-card{
   background:var(--surface);
   border:1px solid var(--line);
-  border-radius:20px;
+  border-radius:18px;
   padding:14px 16px;
   display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  gap:10px;
-  box-shadow:var(--shadow-sm);
-}
-.rest-card.prompt{border-color:var(--rose);background:var(--surface-tint);}
-.rest-card p{font-size:13.5px;color:var(--ink-soft);font-weight:600;text-align:center;}
-.rest-card p b{color:var(--ink);font-weight:700;}
-.segmented{
-  display:flex;
-  background:var(--fonte-soft);
-  border-radius:999px;
-  padding:3px;
-  gap:2px;
-  width:100%;
-}
-.segmented button{
-  border:none;
-  background:transparent;
-  padding:9px 14px;
-  border-radius:999px;
-  font-size:12.5px;
-  font-weight:700;
-  color:var(--ink-soft);
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
   cursor:pointer;
-  flex:1;
-}
-.segmented button[data-active="true"]{
-  background:var(--rose);
-  color:var(--on-rose);
   box-shadow:var(--shadow-sm);
+}
+.morning-card:active{transform:scale(.99);}
+.morning-card-text h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.morning-card-text p{font-size:12.5px;color:var(--ink-soft);}
+.chevron-right{flex:none;width:20px;height:20px;color:var(--ink-soft);transform:rotate(-90deg);}
+.chevron-right svg{width:100%;height:100%;}
+.rest-changer{
+  background:none;
+  border:none;
+  color:var(--rose);
+  font-size:13px;
+  font-weight:700;
+  text-decoration:underline;
+  cursor:pointer;
+  padding:4px;
 }
 
 /* ---------- tabs ---------- */
@@ -936,15 +925,10 @@ function render(){
   });
   html += '</nav>';
 
-  // rest picker
-  var restToday = currentRestDay();
-  var needsPrompt = !restToday;
-  html += '<div class="rest-card'+(needsPrompt?' prompt':'')+'">'+
-    '<p>'+(needsPrompt ? '<b>Nouvelle semaine.</b> Choisis ton jour de repos.' : 'Repos cette semaine : <b>'+DAY_LABEL[restToday]+'</b>')+'</p>'+
-    '<div class="segmented" id="restSeg">'+
-      '<button data-rest="samedi" data-active="'+(restToday==="samedi")+'">Samedi</button>'+
-      '<button data-rest="dimanche" data-active="'+(restToday==="dimanche")+'">Dimanche</button>'+
-    '</div>'+
+  // morning stretch quick access
+  html += '<div class="morning-card" id="morningCard">'+
+    '<div class="morning-card-text"><h3>Étirement matinal</h3><p>15-20 min · à faire chaque jour au réveil</p></div>'+
+    '<span class="chevron-right">'+ICONS.chevron+'</span>'+
   '</div>';
 
   // tabs
@@ -979,10 +963,11 @@ function renderWorkoutHTML(dayKey){
   var done = !!(completedFor(dtKey).workout);
 
   if(m === null){
-    return '<div class="rest-day-hero"><h2>Choisis d\'abord ton repos</h2><p>Utilise le sélecteur ci-dessus pour choisir si ton repos cette semaine tombe le samedi ou le dimanche.</p></div>';
+    return '<div class="rest-day-hero"><h2>Choisis d\'abord ton repos</h2><p>Touche Samedi ou Dimanche ci-dessus pour choisir ton jour de repos cette semaine.</p></div>';
   }
   if(m === "rest"){
-    return '<div class="rest-day-hero"><h2>Jour de repos</h2><p>Aucune séance aujourd\'hui — profites-en pour récupérer. Tu peux quand même faire ton étirement matinal dans l\'autre onglet.</p></div>';
+    return '<div class="rest-day-hero"><h2>Jour de repos</h2><p>Aucune séance aujourd\'hui — profites-en pour récupérer. Tu peux quand même faire ton étirement matinal dans l\'autre onglet.</p>'+
+      '<button class="rest-changer" id="restChanger">Changer mon jour de repos</button></div>';
   }
 
   var w = WORKOUTS[m];
@@ -1067,7 +1052,7 @@ function renderExercise(ex, idx, muscleKey, dtKey){
 function renderMorningHTML(){
   var dtKey = todayKey;
   var done = !!(completedFor(dtKey).morning);
-  var html = '<div class="workout-hero" style="background:linear-gradient(135deg,var(--fonte) 0%, var(--ink) 100%);"><p class="kicker">Chaque matin</p><h2>'+MORNING.title+'</h2>'+
+  var html = '<div class="workout-hero"><p class="kicker">Chaque matin</p><h2>'+MORNING.title+'</h2>'+
     '<div class="meta"><span class="meta-chip">'+ICONS.clock+' '+MORNING.est+'</span></div></div>';
 
   MORNING.sections.forEach(function(sec, si){
@@ -1088,7 +1073,11 @@ function bindTopLevel(){
   var strip = document.getElementById("weekStrip");
   strip.querySelectorAll(".day-pill").forEach(function(p){
     p.addEventListener("click", function(){
-      state.selectedDay = p.getAttribute("data-day");
+      var dk = p.getAttribute("data-day");
+      if((dk==="samedi"||dk==="dimanche") && !currentRestDay()){
+        state.restDayByWeek[currentIsoWeek] = dk;
+      }
+      state.selectedDay = dk;
       state.tab = "workout";
       saveState();
       render();
@@ -1101,12 +1090,12 @@ function bindTopLevel(){
     render();
   });
 
-  var seg = document.getElementById("restSeg");
-  seg.querySelectorAll("button").forEach(function(b){
-    b.addEventListener("click", function(){
-      state.restDayByWeek[currentIsoWeek] = b.getAttribute("data-rest");
-      saveState();
-      render();
+  document.getElementById("morningCard").addEventListener("click", function(){
+    state.tab = "morning";
+    saveState();
+    renderMain();
+    document.querySelectorAll(".tab").forEach(function(tt){
+      tt.setAttribute("data-active", tt.getAttribute("data-tab")===state.tab ? "true":"false");
     });
   });
 
@@ -1124,6 +1113,15 @@ function bindTopLevel(){
 
 function bindMainEvents(){
   unlockAudioOnce();
+
+  var restChanger = document.getElementById("restChanger");
+  if(restChanger){
+    restChanger.addEventListener("click", function(){
+      delete state.restDayByWeek[currentIsoWeek];
+      saveState();
+      render();
+    });
+  }
 
   document.querySelectorAll(".exercise-top[data-toggle]").forEach(function(top){
     top.addEventListener("click", function(){
