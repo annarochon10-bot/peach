@@ -60,7 +60,7 @@ button{font-family:inherit;}
 /* ---------- topbar ---------- */
 .topbar{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
   gap:12px;
   padding:4px 2px;
@@ -75,13 +75,23 @@ button{font-family:inherit;}
   margin:0 0 3px;
 }
 .wordmark{
+  display:flex;
+  align-items:center;
+  gap:7px;
   font-family:"Figtree",-apple-system,sans-serif;
-  font-size:26px;
+  font-size:28px;
   font-weight:800;
   letter-spacing:.16em;
   text-transform:uppercase;
   color:var(--rose);
   line-height:1;
+}
+.wordmark svg{width:17px;height:17px;flex:none;color:var(--rose-deep);}
+.tagline{
+  font-size:12.5px;
+  color:var(--ink-soft);
+  margin-top:4px;
+  font-style:italic;
 }
 .week-chip{
   display:flex;
@@ -108,8 +118,45 @@ button{font-family:inherit;}
   border-radius:999px;
   cursor:pointer;
   flex:none;
+  align-self:flex-start;
 }
 .unit-chip:active{transform:scale(.95);}
+
+/* ---------- stats row ---------- */
+.stats-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  box-shadow:var(--shadow-sm);
+}
+.stat-card .num{
+  font-family:"Fraunces",serif;
+  font-size:28px;
+  font-weight:600;
+  color:var(--rose);
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-variant-numeric:tabular-nums;
+}
+.stat-card .num svg{width:19px;height:19px;flex:none;}
+.stat-card .num-sub{font-size:16px;color:var(--ink-soft);font-weight:500;}
+.stat-card .label{
+  font-size:10.5px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
 
 /* ---------- week strip ---------- */
 .week-strip{
@@ -326,7 +373,18 @@ button{font-family:inherit;}
   gap:10px;
   box-shadow:var(--shadow-sm);
 }
-.exercise-top{display:flex;gap:12px;align-items:flex-start;}
+.exercise-top{display:flex;gap:12px;align-items:flex-start;cursor:pointer;}
+.exercise-top:active{opacity:.85;}
+.chevron{
+  flex:none;
+  width:22px;height:22px;
+  margin-top:2px;
+  color:var(--ink-soft);
+  transition:transform .2s ease;
+}
+.chevron svg{width:100%;height:100%;}
+.exercise[data-expanded="true"] .chevron{transform:rotate(180deg);color:var(--rose);}
+.exercise-details{padding-top:2px;}
 .exercise-idx{
   font-family:"Fraunces",serif;
   font-size:20px;
@@ -569,8 +627,16 @@ var ICONS = {
   flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3-3 4-3 8a3 3 0 006 0c1.2 1 2 2.8 2 4.5A5.5 5.5 0 016.5 20 5.5 5.5 0 013 14.5C3 9 8 7 8 3c1.5 1 2 2.5 1.5 4C10.5 4.5 11 3 12 2z"/></svg>',
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
   pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
-  clock: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+  clock: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  chevron: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5l2.4 7.4 7.6 2.1-7.6 2.1L12 20.5l-2.4-7.4L2 11l7.6-2.1L12 1.5z"/></svg>'
 };
+
+function formatRest(sec){
+  if(!sec || sec<=0) return "—";
+  var m = Math.floor(sec/60), s = sec%60;
+  return m+":"+pad(s);
+}
 
 /* ============ PROGRAM DATA ============ */
 var DAYS = ["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
@@ -838,13 +904,19 @@ function render(){
 
   html += '<header class="topbar">'+
     '<div class="brand">'+
-      '<div class="brand-text"><p class="eyebrow">'+formatFullDate(today)+'</p><p class="wordmark">Peach</p></div>'+
+      '<div class="brand-text">'+
+        '<p class="eyebrow">'+formatFullDate(today)+'</p>'+
+        '<p class="wordmark">'+ICONS.spark+'Peach</p>'+
+        '<p class="tagline">Ton programme, ta pêche.</p>'+
+      '</div>'+
     '</div>'+
-    '<div class="header-right">'+
-      '<button class="unit-chip" id="unitToggle">'+state.unit.toUpperCase()+'</button>'+
-      '<div class="week-chip streak-chip" title="'+streak+' jours de suite">'+ICONS.flame+'<span>'+streak+'</span></div>'+
-    '</div>'+
+    '<button class="unit-chip" id="unitToggle">'+state.unit.toUpperCase()+'</button>'+
   '</header>';
+
+  html += '<div class="stats-row">'+
+    '<div class="stat-card"><p class="num">'+ICONS.flame+streak+'</p><p class="label">Jours de suite</p></div>'+
+    '<div class="stat-card"><p class="num">'+wp.done+'<span class="num-sub">/'+wp.total+'</span></p><p class="label">Séances cette semaine</p></div>'+
+  '</div>';
 
   // week strip
   html += '<nav class="week-strip" id="weekStrip">';
@@ -914,10 +986,9 @@ function renderWorkoutHTML(dayKey){
   }
 
   var w = WORKOUTS[m];
-  var wp = weekProgress();
   var html = "";
   html += '<div class="workout-hero"><p class="kicker">'+DAY_LABEL[dayKey]+'</p><h2>'+w.title+'</h2>'+
-    '<div class="meta"><span class="meta-chip">'+ICONS.clock+' '+w.est+'</span><span class="meta-chip">'+w.exercises.length+' exercises</span><span class="meta-chip">'+wp.done+'/'+wp.total+' cette semaine</span></div></div>';
+    '<div class="meta"><span class="meta-chip">'+ICONS.clock+' '+w.est+'</span><span class="meta-chip">'+w.exercises.length+' exercises</span></div></div>';
 
   html += '<p class="callout">3 séries maximum par exercice — fais compter la dernière, pousse-la jusqu\'à l\'échec.</p>';
 
@@ -962,12 +1033,12 @@ function renderExercise(ex, idx, muscleKey, dtKey){
     var isDone = !!checks[s];
     setsHtml += '<div class="set-dot" data-ex="'+exId+'" data-set="'+s+'" data-done="'+isDone+'">'+(isDone?"✓":(s+1))+'</div>';
   }
-  var restLabel = ex.rest>0 ? Math.round(ex.rest/60*10)/10+" min" : "none";
+  var restLabel = formatRest(ex.rest);
   var savedW = state.weights[exId];
   var wVal = savedW ? savedW.value : "";
   var lastLine = savedW ? ("Dernière fois : "+savedW.value+" "+savedW.unit) : "Pas encore de poids enregistré";
   var html = '<div class="exercise" data-exid="'+exId+'">'+
-    '<div class="exercise-top">'+
+    '<div class="exercise-top" data-toggle="'+exId+'">'+
       '<span class="exercise-idx">'+(idx+1)+'</span>'+
       '<div class="exercise-head">'+
         '<h3>'+ex.name+'</h3>'+
@@ -976,11 +1047,12 @@ function renderExercise(ex, idx, muscleKey, dtKey){
           '<span class="badge rest">Rest '+restLabel+'</span>'+
         '</div>'+
       '</div>'+
+      '<span class="chevron">'+ICONS.chevron+'</span>'+
     '</div>'+
-    '<p class="exercise-cue">'+ex.cue+'</p>';
-  if(ex.note){
-    html += '<p class="exercise-note">'+ex.note+'</p>';
-  }
+    '<div class="exercise-details" hidden>'+
+      '<p class="exercise-cue">'+ex.cue+'</p>'+
+      (ex.note ? '<p class="exercise-note">'+ex.note+'</p>' : '')+
+    '</div>';
   html += '<div class="sets-row">'+setsHtml+'</div>';
   html += '<div class="weight-row">'+
       '<span class="weight-label">Poids</span>'+
@@ -1052,6 +1124,16 @@ function bindTopLevel(){
 
 function bindMainEvents(){
   unlockAudioOnce();
+
+  document.querySelectorAll(".exercise-top[data-toggle]").forEach(function(top){
+    top.addEventListener("click", function(){
+      var card = top.closest(".exercise");
+      var details = card.querySelector(".exercise-details");
+      var expanded = card.getAttribute("data-expanded") === "true";
+      details.hidden = expanded;
+      card.setAttribute("data-expanded", (!expanded).toString());
+    });
+  });
 
   document.querySelectorAll(".set-dot").forEach(function(dot){
     dot.addEventListener("click", function(){
