@@ -330,14 +330,18 @@ button{font-family:inherit;}
 }
 
 .stretch-row{
-  display:flex;
-  gap:12px;
   background:var(--surface);
   border:1px solid var(--line);
   border-radius:16px;
   padding:12px 14px;
-  align-items:flex-start;
 }
+.stretch-top{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  cursor:pointer;
+}
+.stretch-top:active{opacity:.85;}
 .stretch-row .idx{
   font-family:"Fraunces",serif;
   font-size:18px;
@@ -348,8 +352,10 @@ button{font-family:inherit;}
 }
 .stretch-row .body{flex:1;}
 .stretch-row .name{font-weight:700;font-size:14.5px;margin-bottom:3px;}
-.stretch-row .dose{font-size:12px;color:var(--rose-deep);font-weight:700;margin-bottom:4px;}
+.stretch-row .dose{font-size:12px;color:var(--rose-deep);font-weight:700;}
 .stretch-row .cue{font-size:13px;color:var(--ink-soft);line-height:1.48;}
+.stretch-details{padding-top:8px;padding-left:32px;}
+.stretch-row[data-expanded="true"] .chevron{transform:rotate(180deg);color:var(--rose);}
 
 /* ---------- exercise card ---------- */
 .exercise{
@@ -738,27 +744,28 @@ var MORNING = {
   est:"15-20 min",
   sections:[
     {title:"Wake-Up",items:[
-      {name:"Cat-Cow",dose:"45s × 2",cue:"On all fours, alternate rounding your back (exhale) and arching it (inhale) at the pace of your breath."},
-      {name:"Standing Hamstring Stretch",dose:"30s × 2",cue:"Hinge your torso forward, knees slightly bent, let your head and arms hang."},
+      {name:"Cat-Cow",dose:"45s",cue:"On all fours, alternate rounding your back (exhale) and arching it (inhale) at the pace of your breath."},
+      {name:"Standing Hamstring Stretch",dose:"30s",cue:"Hinge your torso forward, knees slightly bent, let your head and arms hang."},
       {name:"Hip Circles",dose:"10 / side",cue:"Standing, draw big circles with your hips."},
       {name:"Cross-Body Shoulder Stretch",dose:"20s / side",cue:"One arm straight across your body, the other hand pins it against your chest."}
     ]},
     {title:"Posture",items:[
-      {name:"Low Lunge Hip Flexor Stretch",dose:"30s / side",cue:"Back knee on the floor, tilt your pelvis forward."},
+      {name:"Puppy Pose Press-Up",dose:"10 slow reps",cue:"Kneel on the floor and plant your hands out in front of you. Sink your chest down toward the floor between your arms, then press through your palms to push your chest back up. Repeat slowly."},
+      {name:"Elevated Chest Stretch",dose:"8 slow reps",cue:"Kneel beside your bed or a couch and place your hands on the surface. Sink your chest down toward the floor between your arms, then lift your head to look up at the top of the stretch."},
       {name:"Doorway Chest Stretch",dose:"30s / side",cue:"Forearm against the door frame, gently lean your body forward until you feel the stretch at the front of the shoulder."},
       {name:"Scapular Retraction",dose:"15 reps",cue:"Arms at your sides, squeeze your shoulder blades together and down, hold for 1 second."},
-      {name:"Light Superman",dose:"2 × 10",cue:"Lying on your stomach, lift your arms and legs slightly at the same time, squeeze your low back and glutes."}
+      {name:"Light Superman",dose:"10 reps",cue:"Lying on your stomach, lift your arms and legs slightly at the same time, squeeze your low back and glutes."}
     ]},
     {title:"Hard Abs",items:[
-      {name:"Hollow Body Hold",dose:"3 × 20-30s",cue:"Low back pressed to the floor, arms and legs straight and slightly lifted — body shaped like a banana."},
-      {name:"Dead Bug",dose:"3 × 10 / side",cue:"Arms and legs up at 90°, lower one arm and the opposite leg toward the floor without arching your back."},
-      {name:"V-Ups",dose:"3 × 12",cue:"Raise your torso and straight legs at the same time to touch your feet, forming a V shape."},
-      {name:"Fast Mountain Climbers",dose:"3 × 20",cue:"In a plank, drive your knees toward your chest quickly, alternating."}
+      {name:"Hollow Body Hold",dose:"20-30s",cue:"Low back pressed to the floor, arms and legs straight and slightly lifted — body shaped like a banana."},
+      {name:"Dead Bug",dose:"10 / side",cue:"Arms and legs up at 90°, lower one arm and the opposite leg toward the floor without arching your back."},
+      {name:"Bicycle Crunch",dose:"20 (10/side)",cue:"Bring your elbow to the opposite knee as you pedal, exhale on every crunch."},
+      {name:"Reverse Crunch",dose:"15",cue:"Lying on your back, knees bent at 90°, curl your hips off the floor by drawing your knees toward your chest, lower with control without swinging."}
     ]},
     {title:"Calisthenics",items:[
-      {name:"Push-Ups",dose:"2 × max (2 in reserve)",cue:"Body aligned, lower your chest close to the floor with elbows at 45°, push back up."},
-      {name:"Bodyweight Squats",dose:"2 × 15",cue:"Feet shoulder-width, push your hips back and down, chest tall."},
-      {name:"Pike Push-Up",dose:"2 × 10",cue:"Hips high in an inverted V, lower the top of your head toward the floor between your hands, push back up — this preps your shoulders."}
+      {name:"Push-Ups",dose:"max (2 in reserve)",cue:"Body aligned, lower your chest close to the floor with elbows at 45°, push back up."},
+      {name:"Bodyweight Squats",dose:"15",cue:"Feet shoulder-width, push your hips back and down, chest tall."},
+      {name:"Pike Push-Up",dose:"10",cue:"Hips high in an inverted V, lower the top of your head toward the floor between your hands, push back up — this preps your shoulders."}
     ]}
   ]
 };
@@ -1002,11 +1009,17 @@ function renderWorkoutHTML(dayKey){
 }
 
 function renderStretchRow(s, idx){
-  return '<div class="stretch-row"><span class="idx">'+idx+'</span><div class="body">'+
-    '<p class="name">'+s.name+'</p>'+
-    '<p class="dose">'+s.dose+'</p>'+
-    '<p class="cue">'+s.cue+'</p>'+
-  '</div></div>';
+  return '<div class="stretch-row" data-expanded="false">'+
+    '<div class="stretch-top" data-toggle="true">'+
+      '<span class="idx">'+idx+'</span>'+
+      '<div class="body">'+
+        '<p class="name">'+s.name+'</p>'+
+        '<p class="dose">'+s.dose+'</p>'+
+      '</div>'+
+      '<span class="chevron">'+ICONS.chevron+'</span>'+
+    '</div>'+
+    '<div class="stretch-details" hidden><p class="cue">'+s.cue+'</p></div>'+
+  '</div>';
 }
 
 function renderExercise(ex, idx, muscleKey, dtKey){
@@ -1127,6 +1140,16 @@ function bindMainEvents(){
     top.addEventListener("click", function(){
       var card = top.closest(".exercise");
       var details = card.querySelector(".exercise-details");
+      var expanded = card.getAttribute("data-expanded") === "true";
+      details.hidden = expanded;
+      card.setAttribute("data-expanded", (!expanded).toString());
+    });
+  });
+
+  document.querySelectorAll(".stretch-top[data-toggle]").forEach(function(top){
+    top.addEventListener("click", function(){
+      var card = top.closest(".stretch-row");
+      var details = card.querySelector(".stretch-details");
       var expanded = card.getAttribute("data-expanded") === "true";
       details.hidden = expanded;
       card.setAttribute("data-expanded", (!expanded).toString());
