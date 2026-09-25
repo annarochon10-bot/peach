@@ -431,44 +431,6 @@ button{font-family:inherit;}
 .rest-day-hero h2{font-size:22px;margin-bottom:8px;}
 .rest-day-hero p{color:var(--ink-soft);font-size:14px;line-height:1.5;}
 
-.toxic-card{
-  background:linear-gradient(135deg,var(--surface-tint) 0%, var(--surface) 100%);
-  border:1px solid var(--rose-soft);
-  border-radius:20px;
-  padding:18px 20px;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  align-items:flex-start;
-}
-.toxic-label{
-  font-size:10.5px;
-  font-weight:800;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-  color:var(--rose);
-}
-.toxic-quote{
-  font-family:"Fraunces",serif;
-  font-style:italic;
-  font-size:19px;
-  line-height:1.4;
-  color:var(--ink);
-}
-.toxic-speak{
-  border:1.5px solid var(--rose);
-  background:transparent;
-  color:var(--rose);
-  font-weight:700;
-  font-size:13px;
-  padding:9px 14px;
-  border-radius:999px;
-  cursor:pointer;
-  display:flex;align-items:center;gap:6px;
-}
-.toxic-speak svg{width:15px;height:15px;}
-.toxic-speak[data-speaking="true"]{background:var(--rose);color:var(--on-rose);}
-
 /* ---------- section ---------- */
 .section-label{
   display:flex;align-items:center;gap:8px;
@@ -513,6 +475,22 @@ button{font-family:inherit;}
   flex:none;
   width:20px;
 }
+.stretch-check{
+  font-family:"Fraunces",serif;
+  font-size:14px;
+  font-weight:700;
+  color:var(--rose);
+  flex:none;
+  width:26px;height:26px;
+  margin-top:-2px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.stretch-check svg{width:13px;height:13px;}
+.stretch-check[data-done="true"]{background:var(--success);border-color:var(--success);color:var(--paper);}
 .stretch-row .body{flex:1;}
 .stretch-row .name{font-weight:700;font-size:14.5px;margin-bottom:3px;}
 .stretch-row .dose{font-size:12px;color:var(--rose-deep);font-weight:700;}
@@ -862,8 +840,8 @@ var WORKOUTS = {
     calloutText:"Biceps are kept light on purpose here — pull-ups, rows and seated cable row already do most of the work for your arms without adding bulk.",
     exercises:[
       {name:"Pull-Ups — Strength Protocol",sets:3,reps:"AMRAP",rest:180,cue:"Pronated grip, just outside shoulder width. Pull by driving your elbows down and back, chest toward the bar, then lower under full control until your arms are straight.",note:"Sets 1-2: max strict reps, all the way to failure. Set 3: if you're cooked, do 5 slow negatives (5-second lowers) instead — or hold a max-effort dead hang as a grip finisher."},
-      {name:"Barbell Row",sets:3,reps:"8-10",rest:180,cue:"Torso hinged to about 45°, flat back. Pull the bar toward your navel while squeezing your shoulder blades together, lower under control without rounding your back."},
-      {name:"Seated Cable Row",sets:3,reps:"12",rest:120,cue:"Sitting tall, pull the handle toward your abdomen with elbows close to your body, squeeze your shoulder blades at the end."},
+      {name:"Cable Lat Extension",sets:3,reps:"12",rest:120,cue:"Rope or straight bar at the high pulley, arms straight. Pull down and back in an arc until your hands reach your thighs, elbows only slightly bent the whole time — squeeze your lats at the bottom, control the return."},
+      {name:"Face Pull",sets:3,reps:"15",rest:90,cue:"Rope at the high pulley, pull toward your face while pulling your hands apart, elbows high, squeeze your shoulder blades — great for shoulder and upper-back health."},
       {name:"Hammer Curl",sets:2,reps:"12",rest:90,cue:"Palms facing each other throughout the movement, curl up under control — this also hits the forearms.",note:"Only 2 light sets here on purpose — just enough to keep your arms toned and strong, not to bulk them up."}
     ],
     cooldown:"Lats + biceps stretch, 30s / side."
@@ -918,7 +896,7 @@ var MORNING = {
       {name:"Elevated Chest Stretch",dose:"8 slow reps",cue:"Kneel beside your bed or a couch and place your hands on the surface. Sink your chest down toward the floor between your arms, then lift your head to look up at the top of the stretch."},
       {name:"Doorway Chest Stretch",dose:"30s / side",cue:"Forearm against the door frame, gently lean your body forward until you feel the stretch at the front of the shoulder."},
       {name:"Scapular Retraction",dose:"15 reps",cue:"Arms at your sides, squeeze your shoulder blades together and down, hold for 1 second."},
-      {name:"Light Superman",dose:"10 reps",cue:"Lying on your stomach, lift your arms and legs slightly at the same time, squeeze your low back and glutes."}
+      {name:"Plank",dose:"20-30s",cue:"Forearms on the floor, body in a straight line from head to heels, core and glutes braced — don't let your hips sag or pike up."}
     ]},
     {title:"Hard Abs",items:[
       {name:"Hollow Body Hold",dose:"20-30s",cue:"Low back pressed to the floor, arms and legs straight and slightly lifted — body shaped like a banana."},
@@ -941,7 +919,7 @@ function loadState(){
     var raw = localStorage.getItem(STORE_KEY);
     if(raw) return JSON.parse(raw);
   }catch(e){}
-  return {restDayByWeek:{}, completed:{}, setChecks:{}, weights:{}, levels:{}, pilates:{}, unit:"lb", silentMode:false, tab:"workout"};
+  return {restDayByWeek:{}, completed:{}, setChecks:{}, morningChecks:{}, weights:{}, levels:{}, pilates:{}, unit:"lb", silentMode:false, tab:"workout"};
 }
 function saveState(){
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
@@ -966,21 +944,6 @@ function isoWeekKey(d){
 var DOW_TO_KEY = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 var MONTHS_FR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 
-var TOXIC_QUOTES = [
-  "Pendant que tu te reposes, quelqu'un d'autre fait sa dernière série.",
-  "Le confort d'aujourd'hui, c'est la médiocrité de demain. Repose-toi, puis reviens dangereuse.",
-  "Personne ne va venir te chercher. Demain, tu te lèves et tu reviens plus forte qu'hier.",
-  "La discipline bat la motivation à tous les coups. La motivation c'est aujourd'hui, la discipline c'est demain aussi.",
-  "T'as le droit de te reposer. T'as pas le droit d'avoir des excuses demain.",
-  "Un jour de repos, pas un jour de retraite. Sois prête à souffrir à nouveau demain.",
-  "Ton corps récupère. Ta tête, elle, planifie déjà comment démolir la prochaine séance.",
-  "Stay hard — même en pyjama, même sur le divan.",
-  "Le repos c'est stratégique aujourd'hui. Ça devient de la faiblesse si tu le fais deux jours de suite.",
-  "Personne ne se souvient de celle qui a fait une pause. Tout le monde se souvient de celle qui est revenue plus forte."
-];
-function randomToxicQuote(){
-  return TOXIC_QUOTES[Math.floor(Math.random()*TOXIC_QUOTES.length)];
-}
 var today = new Date();
 var todayKey = dateKey(today);
 var todayDow = DOW_TO_KEY[today.getDay()];
@@ -990,6 +953,7 @@ if(!state.selectedDay) state.selectedDay = todayDow;
 if(!state.tab) state.tab = "workout";
 if(!state.weights) state.weights = {};
 if(!state.levels) state.levels = {};
+if(!state.morningChecks) state.morningChecks = {};
 if(!state.pilates) state.pilates = {};
 if(state.silentMode === undefined) state.silentMode = false;
 if(!state.unit) state.unit = "lb";
@@ -1299,14 +1263,8 @@ function renderWorkoutHTML(dayKey){
     return '<div class="rest-day-hero"><h2>Choisis d\'abord ton repos</h2><p>Touche Samedi ou Dimanche ci-dessus pour choisir ton jour de repos cette semaine.</p></div>';
   }
   if(m === "rest"){
-    var quote = randomToxicQuote();
-    return '<div class="rest-day-hero"><h2>Jour de repos</h2><p>Aucune séance aujourd\'hui — profites-en pour récupérer. Tu peux quand même faire ton étirement matinal dans l\'autre onglet.</p>'+
-      '<button class="rest-changer" id="restChanger">Changer mon jour de repos</button></div>'+
-      '<div class="toxic-card">'+
-        '<p class="toxic-label">Motivation (douteuse)</p>'+
-        '<p class="toxic-quote" id="toxicQuote">'+quote+'</p>'+
-        '<button class="toxic-speak" id="toxicSpeak">'+ICONS.speaker+' Écouter</button>'+
-      '</div>';
+    return '<div class="rest-day-hero"><h2>Repos bien mérité</h2><p>Aucune séance aujourd\'hui — profites-en pour récupérer. Tu peux quand même faire ton étirement matinal dans l\'autre onglet.</p>'+
+      '<button class="rest-changer" id="restChanger">Changer mon jour de repos</button></div>';
   }
 
   var w = WORKOUTS[m];
@@ -1340,10 +1298,17 @@ function renderWorkoutHTML(dayKey){
   return html;
 }
 
-function renderStretchRow(s, idx){
+function renderStretchRow(s, idx, checkKey){
+  var idxHtml;
+  if(checkKey){
+    var isDone = !!state.morningChecks[checkKey];
+    idxHtml = '<button class="stretch-check" data-check="'+checkKey+'" data-idx="'+idx+'" data-done="'+isDone+'">'+(isDone?ICONS.check:idx)+'</button>';
+  } else {
+    idxHtml = '<span class="idx">'+idx+'</span>';
+  }
   return '<div class="stretch-row" data-expanded="false">'+
     '<div class="stretch-top" data-toggle="true">'+
-      '<span class="idx">'+idx+'</span>'+
+      idxHtml+
       '<div class="body">'+
         '<p class="name">'+s.name+'</p>'+
         '<p class="dose">'+s.dose+'</p>'+
@@ -1418,7 +1383,7 @@ function renderMorningHTML(){
     html += '<div class="section-label"><span class="n">'+(si+1)+'</span> '+sec.title+'</div>';
     html += '<div class="morning-section">';
     sec.items.forEach(function(item, i){
-      html += renderStretchRow(item, i+1);
+      html += renderStretchRow(item, i+1, dtKey+"|"+si+"_"+i);
     });
     html += '</div>';
   });
@@ -1532,27 +1497,6 @@ function bindMainEvents(){
     });
   }
 
-  var toxicSpeak = document.getElementById("toxicSpeak");
-  if(toxicSpeak){
-    toxicSpeak.addEventListener("click", function(){
-      try{
-        if(!("speechSynthesis" in window)) return;
-        if(window.speechSynthesis.speaking){
-          window.speechSynthesis.cancel();
-          toxicSpeak.setAttribute("data-speaking","false");
-          return;
-        }
-        var text = document.getElementById("toxicQuote").textContent;
-        var utter = new SpeechSynthesisUtterance(text);
-        utter.lang = "fr-FR";
-        utter.rate = 0.95;
-        utter.pitch = 0.85;
-        utter.onend = function(){ toxicSpeak.setAttribute("data-speaking","false"); };
-        toxicSpeak.setAttribute("data-speaking","true");
-        window.speechSynthesis.speak(utter);
-      }catch(e){}
-    });
-  }
 
   document.querySelectorAll(".exercise-top[data-toggle]").forEach(function(top){
     top.addEventListener("click", function(){
@@ -1571,6 +1515,18 @@ function bindMainEvents(){
       var expanded = card.getAttribute("data-expanded") === "true";
       details.hidden = expanded;
       card.setAttribute("data-expanded", (!expanded).toString());
+    });
+  });
+
+  document.querySelectorAll(".stretch-check[data-check]").forEach(function(btn){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      var key = btn.getAttribute("data-check");
+      var done = !state.morningChecks[key];
+      state.morningChecks[key] = done;
+      saveState();
+      btn.setAttribute("data-done", done.toString());
+      btn.innerHTML = done ? ICONS.check : btn.getAttribute("data-idx");
     });
   });
 
